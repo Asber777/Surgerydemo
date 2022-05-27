@@ -1,0 +1,14 @@
+{
+    "terminal.integrated.shell.windows": "C:\\Windows\\System32\\cmd.exe",
+    "terminal.integrated.shellArgs.windows": [
+        "/K",
+        "C:\\Users\\LeeHyerim\\Anaconda3\\Scripts\\activate.bat C:\\Users\\LeeHyerim\\Anaconda3 & conda activate dqn"
+    ],
+    "python.formatting.provider": "autopep8",
+    "python.formatting.autopep8Args": [
+        "--max-line-length",
+        "120"
+    ],
+    "terminal.integrated.automationShell.windows": "",
+    "python.pythonPath": "C:\\Users\\LeeHyerim\\Anaconda3\\envs\\dqn\\python.exe"
+}

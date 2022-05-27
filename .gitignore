@@ -3,8 +3,8 @@ __pycache__/
 *.py[cod]
 *$py.class
 result/
-DQN-for-LunarLander-v2/
-CartPole_DQN/
+# DQN-for-LunarLander-v2/
+# CartPole_DQN/
 *.ckpt
 *.pth
 runs/
