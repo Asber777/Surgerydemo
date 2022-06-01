@@ -4,12 +4,6 @@ import pandas as pd
 import torch
 from torch.utils.data import TensorDataset
 
-'''
-vscode中的jupyter插件 不知道为什么无法在jupyter文件中对pretreat进行import
-所以本文件暂时作废. 
-'''
-
-
 def get_pretreated_training_data(loc ='./data/titanic/train.csv', get_y=False):
     # get Title feature
     training = pd.read_csv(loc)
