@@ -10,7 +10,12 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.tensorboard import SummaryWriter
-
+'''
+you need to modify your json 
+"input_dim":2
+so your Qnet's input dimension is 2*2 = 4
+here we modify output dimension in code below. 
+'''
 
 class Json_Parser:
     def __init__(self, file_name):
@@ -28,7 +33,7 @@ class Qnet(nn.Module):
         h = self.parser.load_parser()['agent']['hidden_unit']
         self.fc1 = nn.Linear(input_dim, h)
         self.fc2 = nn.Linear(h, h)
-        self.fc3 = nn.Linear(h, 2)
+        self.fc3 = nn.Linear(h, 2) # outputs should be 2 for Surgery's premodel. 
 
     def forward(self, x):
         acti = self.parser.load_parser()['agent']['activation']
@@ -75,6 +80,7 @@ class ReplayMemory:
         return (ss, actions, rs, ss_next, dones)
 
 
+input_index = [0,2] 
 class DQNAgent:
     def __init__(self):
         super().__init__()
@@ -115,7 +121,7 @@ class DQNAgent:
 
     def get_action(self, x):
         if np.random.rand() < self.eps:
-            action = np.random.randint(2)
+            action = np.random.randint(2) # output 2 actions randomly
         else:
             self.net.eval()
             q = self.net(x.view(1, -1))
@@ -178,7 +184,7 @@ class DQNAgent:
         pass_score = self.max_step - 5
 
         s_now = self.env.reset()
-        s_now = s_now[[0,2]]
+        s_now = s_now[input_index]
         s_prev = s_now
         score = 0
 
@@ -190,7 +196,7 @@ class DQNAgent:
                 a = self.get_action(x)
 
                 s_next, r, done, _ = self.env.step(a)
-                s_next = s_next[[0,2]]
+                s_next = s_next[input_index]
                 score += 1
 
                 x_next = torch.from_numpy(
@@ -201,7 +207,7 @@ class DQNAgent:
                     latest_scores.append(score)
                     score = 0
                     s_now = self.env.reset()
-                    s_now = s_now[[0,2]]
+                    s_now = s_now[input_index]
                     s_prev = s_now
                 else:
                     s_prev = s_now
@@ -234,39 +240,14 @@ class DQNAgent:
 
         self.env.close()
 
-    # def test_surgery(self, sample_n, store_sample = False):
-    #     self.env = gym.make('{}'.format(self.parm['env_name']))
-    #     s_now = self.env.reset()
-    #     s_prev = s_now
-    #     score = 0
-    #     for episode in range(sample_n):
-    #         for step in range(self.max_step):
-    #             x = torch.from_numpy(np.concatenate(
-    #                 (s_now, s_now-s_prev))).float()
-    #             a = self.get_action(x)
-    #             s_next, r, done, _ = self.env.step(a)
-    #             score += 1
-    #             x_next = torch.from_numpy(
-    #                 np.concatenate((s_next, s_next-s_now))).float()
-    #             if store_sample:
-    #                 self.replay_memory.save((x, a, r, x_next, done))
-    #             if done:
-    #                 print("input_dim : ",x.shape, x_next)
-    #                 print("action is ", a)
-    #                 print("episode: {} | score: {:3.1f}".format(episode, score))
-    #                 score = 0
-    #                 s_now = self.env.reset()
-    #                 s_prev = s_now
-    #                 break
-    #             else:
-    #                 s_prev = s_now
-    #                 s_now = s_next
-    #     self.env.close()
-
     def test_surgery(self, sample_n, store_sample = False):
+        '''
+        for test the trained model 's performance. 
+        This function do not execute Surgery. 
+        '''
         self.env = gym.make('{}'.format(self.parm['env_name']))
         s_now = self.env.reset()
-        s_now = s_now[[0,2]]
+        s_now = s_now[input_index]
         s_prev = s_now
         score = 0
         for episode in range(sample_n):
@@ -275,7 +256,7 @@ class DQNAgent:
                     (s_now, s_now-s_prev))).float()
                 a = self.get_action(x)
                 s_next, r, done, _ = self.env.step(a)
-                s_next = s_next[[0,2]]
+                s_next = s_next[input_index]
                 score += 1
                 x_next = torch.from_numpy(
                     np.concatenate((s_next, s_next-s_now))).float()
@@ -285,7 +266,7 @@ class DQNAgent:
                     print("episode: {} | score: {:3.1f}".format(episode, score))
                     score = 0
                     s_now = self.env.reset()
-                    s_now = s_now[[0,2]]
+                    s_now = s_now[input_index]
                     s_prev = s_now
                     break
                 else:
@@ -296,7 +277,6 @@ class DQNAgent:
 if __name__ == '__main__':
     # 此结果使用 0 2 index的state
     agent = DQNAgent()
-    
     # agent.run()
     para = torch.load('/home/workspace/util/surgery/CartPole_DQN/result/model/model_CartPole-v0_double_relu_256_in220220517-03_08_56.pth')
     agent.net.load_state_dict(para)
